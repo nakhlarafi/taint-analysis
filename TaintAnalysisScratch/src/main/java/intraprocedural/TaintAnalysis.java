@@ -101,7 +101,7 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<TaintValue>
                 return ((SourceLnPosTag) tag).startLn();
             }
         }
-        return -1; // or throw an exception if you prefer
+        return -1;
     }
 
 
@@ -136,13 +136,11 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<TaintValue>
             // Check if the statement is a source statement.
             if (stmt.containsInvokeExpr() &&
                     sources.contains(stmt.getInvokeExpr().getMethodRef().getSignature())) {
-                taintSources.add(unit);  // The current statement is also a source.
+                taintSources.add(unit);
             }
 
             // Handle taint propagation for leftOp based on taintSources.
             if (!taintSources.isEmpty()) {
-                // If taintSources is not empty, leftOp should be tainted.
-                // If multiple taint sources, each taint source will be associated with leftOp.
                 for (Unit taintSource : taintSources) {
                     TaintValue newTaintValue = new TaintValue(leftOp, taintSource);
                     outState.add(newTaintValue);
@@ -168,8 +166,6 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<TaintValue>
 
     boolean isInsideDecisionBlock(Stmt stmt) {
         // Logic to determine whether stmt is inside an if-else block.
-        // May involve inspecting the CFG, surrounding units, etc.
-        // Note: Implementing this accurately could be complex.
         List<Unit> predecessors = unitGraph.getPredsOf(stmt);
         for (Unit pred : predecessors) {
             if (pred instanceof IfStmt) {
@@ -214,7 +210,7 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<TaintValue>
                 AssignStmt assign = (AssignStmt) currentUnit;
                 TaintValue newTaint = new TaintValue(assign.getLeftOp(), taintValue.getSource());
                 branchState.add(newTaint);
-                System.out.println("New taint: " + newTaint);
+//                System.out.println("New taint: " + newTaint);
             }
 
             List<Unit> successors = unitGraph.getSuccsOf(currentUnit);
