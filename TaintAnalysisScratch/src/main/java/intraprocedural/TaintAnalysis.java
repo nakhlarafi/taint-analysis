@@ -70,7 +70,6 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<TaintValue>
                 String methodSignature = stmt.getInvokeExpr().getMethodRef().getSignature();
 
                 if (sinks.contains(methodSignature)) {
-                    // Retrieve values used in the unit
                     Set<Value> usedValues = new HashSet<>();
                     for (ValueBox usedValueBoxes : unit.getUseBoxes()) {
                         usedValues.add(usedValueBoxes.getValue());
@@ -78,7 +77,6 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<TaintValue>
                     // Check whether any of the used variables are tainted.
                     for (TaintValue taintedValue : inState) {
                         if (usedValues.contains(taintedValue.getValue())) {
-                            // If a variable is tainted, report a leak
                             int line = getLineNumber(unit);
                             int sourceLine = getLineNumber(taintedValue.getSource());
                             System.out.println("——————————————————");
@@ -109,23 +107,19 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<TaintValue>
     protected void flowThrough(FlowSet<TaintValue> inState, Unit unit, FlowSet<TaintValue> outState) {
         Stmt stmt = (Stmt) unit;
 
-        // Copy the incoming state to the outgoing state as the base.
         inState.copy(outState);
         if (stmt instanceof AssignStmt && !isInsideDecisionBlock(stmt)) {
             AssignStmt assignStmt = (AssignStmt) stmt;
             Value rightOp = assignStmt.getRightOp();
             Value leftOp = assignStmt.getLeftOp();
 
-            // Initialize a set to keep track of all taint sources related to rightOp.
             Set<Unit> taintSources = new HashSet<>();
 
-            // Check if rightOp is a binary operation and handle taint propagation.
             if (rightOp instanceof BinopExpr) {
                 BinopExpr binOp = (BinopExpr) rightOp;
                 Value op1 = binOp.getOp1();
                 Value op2 = binOp.getOp2();
 
-                // Check if op1 or op2 is tainted and add the source to taintSources.
                 for (TaintValue taintValue : inState) {
                     if (taintValue.getValue().equivTo(op1) || taintValue.getValue().equivTo(op2)) {
                         taintSources.add(taintValue.getSource());
@@ -139,7 +133,6 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<TaintValue>
                 taintSources.add(unit);
             }
 
-            // Handle taint propagation for leftOp based on taintSources.
             if (!taintSources.isEmpty()) {
                 for (Unit taintSource : taintSources) {
                     TaintValue newTaintValue = new TaintValue(leftOp, taintSource);
@@ -155,7 +148,7 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<TaintValue>
             }
         }
         if (stmt instanceof IfStmt) {
-            // Handle implicit flows using the refactored methods
+            // Handle implicit flows
 //            System.out.println("Statment: "+stmt);
             handleImplicitFlows(inState, stmt, outState);
         }

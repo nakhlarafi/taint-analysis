@@ -4,27 +4,21 @@ import soot.Unit;
 import soot.Value;
 
 public class TaintValue {
-    private final Value value;  // The actual value being tainted.
-    private final Unit source;  // The source statement of the taint.
+    private final Value value;
+    private final Unit source;
 
-    // Constructor to initialize the TaintValue.
     public TaintValue(Value value, Unit source) {
         this.value = value;
         this.source = source;
     }
 
-    // Getter for value.
     public Value getValue() {
         return value;
     }
 
-    // Getter for source.
     public Unit getSource() {
         return source;
     }
-
-    // Overriding equals and hashCode is crucial to ensure that TaintValue objects can be used
-    // effectively in collections like sets and maps.
 
     @Override
     public boolean equals(Object o) {
@@ -36,7 +30,6 @@ public class TaintValue {
 
     @Override
     public int hashCode() {
-        // Consider both value and source in hash code calculation.
         int result = value.hashCode();
         result = 31 * result + source.hashCode();
         return result;
